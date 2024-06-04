@@ -1,0 +1,22 @@
+{% extends  'base.html' %}
+
+{% block content %}
+    <h1>Калькулятор :З</h1>
+    <form method="POST">
+        <div class="mb-3 mt-3">
+            <input id="a-field" type="text" name="a" value="{{ request.form['a'] }}">
+            <select name="operation" id="">
+                <option value="+" {% if request.form['operation'] == '+' %}selected{% endif %}>+</option>
+                <option value="-" {% if request.form['operation'] == '-' %}selected{% endif %}>-</option>
+                <option value="*" {% if request.form['operation'] == '*' %}selected{% endif %}>*</option>
+                <option value="/" {% if request.form['operation'] == '/' %}selected{% endif %}>/</option>
+            </select>
+            <input id="b-field" type="text" name="b" value="{{ request.form['b'] }}">
+            <button type="submit" class="btn btn-secondary">отправить</button>
+        </div>
+    </form>
+   {{ res }}
+   {% if error %}
+        <div class="text-danger">{{ error }}</div>
+   {% endif %}
+{% endblock %}

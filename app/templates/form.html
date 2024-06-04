@@ -1,0 +1,26 @@
+{% extends  'base.html' %}
+
+{% block content %}
+    <h1>Форма регистрации</h1>
+    <form method="POST">
+        <div class="mb-3 mt-3">
+        <label for="name-field">ФИО</label>
+        <input id="name-field" type="text" name="name-f" value="{{ request.form['name-f'] }}">
+        </div>
+        <div class="mb-3">
+        <label for="email-field">email</label>
+        <input id="email-field" type="email" name="email-f" value="{{ request.form['email-f'] }}">
+        </div>
+        <button type="submit" class="btn btn-secondary">отправить</button>
+    </form>
+    <table class="table">
+        <tbody>
+            {% for key, value in request.form.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
