@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container text-center">
+    <div class="row align-items-start p-5">
+        <div class="col">
+            <p>
+                Вы посетили данную страницу {{session['visits_count']}} раз.
+            </p>
+        </div>
+{% endblock %}
