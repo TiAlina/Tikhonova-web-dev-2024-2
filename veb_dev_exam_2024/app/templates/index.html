@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Список книг</h1>
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Год</th>
+                <th>Средняя оценка</th>
+                <th>Количество рецензий</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="books-table-body">
+            {% for book in books %}
+            <tr>
+                <td>{{ book.title }}</td>
+                <td>{{ book.year }}</td>
+                <td>{{ book.average_rating or 'Нет оценок' }}</td>
+                <td>{{ book.reviews_count }}</td>
+                <td>
+                    <a href="{{ url_for('edit_book', book_id=book.id) }}" class="btn btn-primary">Редактировать</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-4 d-flex justify-content-end">
+        <a href="{{ url_for('add_book') }}" class="btn btn-primary">Добавить книгу</a>
+    </div>
+
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center" id="pagination">
+            {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="loadPage({{ page-1 }})" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="#" onclick="loadPage({{ p }})">{{ p }}</a>
+            </li>
+            {% endfor %}
+            {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="loadPage({{ page+1 }})" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<script>
+    function loadPage(page) {
+        fetch(`/page/${page}`)
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+
+                // Update books table body
+                const newTableBody = doc.querySelector('#books-table-body').innerHTML;
+                document.querySelector('#books-table-body').innerHTML = newTableBody;
+
+                // Update pagination
+                const newPagination = doc.querySelector('#pagination').innerHTML;
+                document.querySelector('#pagination').innerHTML = newPagination;
+            })
+            .catch(error => console.error('Error loading page:', error));
+    }
+</script>
+{% endblock %}
