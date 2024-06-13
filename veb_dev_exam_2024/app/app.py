@@ -93,6 +93,23 @@ def index(page=1):
     total_pages = (total_books + per_page - 1) // per_page
     return render_template('index.html', books=books, page=page, total_pages=total_pages)
 
+def get_reviews_stats():
+    cnx = db.connect()
+    with cnx.cursor(named_tuple=True) as cursor:
+        cursor.execute("""
+            SELECT
+                book_id,
+                COUNT(*) AS reviews_count,
+                FORMAT(AVG(rating), 1) AS average_rating
+            FROM
+                Reviews
+            GROUP BY
+                book_id
+        """)
+        reviews_stats = cursor.fetchall()
+    return reviews_stats
+
+
 def get_md5(file):
     file.seek(0)
     file_hash = hashlib.md5()
@@ -215,7 +232,34 @@ def delete_book(book_id):
 
     return jsonify({'message': 'Книга успешно удалена'}), 200
 
+@app.route('/book/<int:book_id>')
+def view_book(book_id):
+    cnx = db.connect()
+    with cnx.cursor(named_tuple=True) as cursor:
+        # Получаем информацию о книге и средней оценке
+        cursor.execute("""
+            SELECT b.*, c.filename as cover_filename,
+                   AVG(r.rating) AS average_rating, COUNT(r.id) AS reviews_count
+            FROM Books b
+            LEFT JOIN Covers c ON b.cover_id = c.id
+            LEFT JOIN Reviews r ON b.id = r.book_id
+            WHERE b.id = %s
+            GROUP BY b.id
+        """, (book_id,))
+        book = cursor.fetchone()
+
+        # Получаем рецензии книги
+        cursor.execute("""
+            SELECT r.rating, r.text, u.username as user_name
+            FROM Reviews r
+            JOIN Users u ON r.user_id = u.id
+            WHERE r.book_id = %s
+        """, (book_id,))
+        reviews = cursor.fetchall()
+
+    return render_template('book.html', book=book, reviews=reviews)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
-
