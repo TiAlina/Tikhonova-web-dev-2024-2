@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Добавить рецензию</h1>
+    <form method="post" action="{{ url_for('add_review', book_id=book_id) }}">
+        <div class="form-group">
+            <label for="rating">Оценка:</label>
+            <select class="form-control" id="rating" name="rating">
+                <option value="5">5 – отлично</option>
+                <option value="4">4 – хорошо</option>
+                <option value="3">3 – удовлетворительно</option>
+                <option value="2">2 – неудовлетворительно</option>
+                <option value="1">1 – плохо</option>
+                <option value="0">0 – ужасно</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="text">Текст рецензии:</label>
+            <textarea class="form-control" id="text" name="text" rows="5"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+</div>
+{% endblock %}
