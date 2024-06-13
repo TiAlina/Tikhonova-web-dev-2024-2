@@ -15,7 +15,7 @@
         <tbody id="books-table-body">
             {% for book in books %}
             <tr>
-                <td>{{ book.title }}</td>
+                <td><a href="{{ url_for('view_book', book_id=book.id) }}" class="text-decoration-none text-dark">{{ book.title }}</a></td>
                 <td>{{ book.year }}</td>
                 <td>{{ book.average_rating or 'Нет оценок' }}</td>
                 <td>{{ book.reviews_count }}</td>
@@ -33,6 +33,26 @@
     <div class="mt-4 d-flex justify-content-end">
         <a href="{{ url_for('add_book') }}" class="btn btn-primary">Добавить книгу</a>
     </div>
+
+    <script>
+        function loadPage(page) {
+            fetch(`/page/${page}`)
+                .then(response => response.text())
+                .then(data => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data, 'text/html');
+
+                    // Update books table body
+                    const newTableBody = doc.querySelector('#books-table-body').innerHTML;
+                    document.querySelector('#books-table-body').innerHTML = newTableBody;
+
+                    // Update pagination
+                    const newPagination = doc.querySelector('#pagination').innerHTML;
+                    document.querySelector('#pagination').innerHTML = newPagination;
+                })
+                .catch(error => console.error('Error loading page:', error));
+        }
+    </script>
 
     <nav aria-label="Page navigation" class="mt-4">
         <ul class="pagination justify-content-center" id="pagination">
@@ -57,6 +77,27 @@
             {% endif %}
         </ul>
     </nav>
+    </div>
+
+    <script>
+    function loadPage(page) {
+        fetch(`/page/${page}`)
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+
+                // Update books table body
+                const newTableBody = doc.querySelector('#books-table-body').innerHTML;
+                document.querySelector('#books-table-body').innerHTML = newTableBody;
+
+                // Update pagination
+                const newPagination = doc.querySelector('#pagination').innerHTML;
+                document.querySelector('#pagination').innerHTML = newPagination;
+            })
+            .catch(error => console.error('Error loading page:', error));
+    }
+    </script>
 </div>
 
 
@@ -80,4 +121,3 @@
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 {% endblock %}
-
