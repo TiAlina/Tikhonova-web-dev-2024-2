@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>{{ book.title }}</h1>
+            <div class="row">
+                <div class="col-md-4">
+                    <img src="{{ url_for('static', filename='covers/' + book.cover_filename) }}" alt="{{ book.title }} Cover" class="img-fluid">
+                </div>
+                <div class="col-md-8">
+                    <h2>Информация о книге:</h2>
+                    <p><strong>Автор:</strong> {{ book.author }}</p>
+                    <p><strong>Год издания:</strong> {{ book.year }}</p>
+                    <p><strong>Издательство:</strong> {{ book.publisher }}</p>
+                    <p><strong>Количество страниц:</strong> {{ book.pages }}</p>
+                    <p><strong>Описание:</strong> {{ book.description }}</p>
+                    <p><strong>Средняя оценка:</strong> <span class="badge bg-success">{{ "%.1f"|format(book.average_rating) if book.average_rating else 'Нет оценок' }}</span></p>
+                    <p><strong>Количество рецензий:</strong> {{ book.reviews_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <h2>Рецензии:</h2>
+            {% if reviews %}
+            <ul class="list-group">
+                {% for review in reviews %}
+                <li class="list-group-item">
+                    <strong>Пользователь:</strong> {{ review.user_name }}<br>
+                    <strong>Оценка:</strong> {{ review.rating }}/5<br>
+                    <strong>Текст:</strong> {{ review.text }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>Нет рецензий для этой книги.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
