@@ -4,6 +4,7 @@ from mysqldb import DatabaseConnector
 import os
 import hashlib
 import bleach
+#import jsonify
 
 app = Flask(__name__)
 application = app
@@ -140,7 +141,7 @@ def add_book():
             cnx.commit()
             flash("Книга успешно добавлена", "success")
             return redirect('/')
-        except mysql.connector.Error as err:
+        except db.connector.Error as err:
             cnx.rollback()
             flash(f"При сохранении данных возникла ошибка: {err}", "danger")
         finally:
@@ -150,5 +151,71 @@ def add_book():
     return render_template('add_book.html')
 
 
+@app.route('/edit/<int:book_id>', methods=['GET', 'POST'])
+def edit_book(book_id):
+    cnx = db.connect()
+    cursor = cnx.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        # Получаем новые данные из формы
+        title = request.form['title']
+        author = request.form['author']
+        year = request.form['year']
+        publisher = request.form['publisher']
+        pages = request.form['pages']
+        description = bleach.clean(request.form['description'], strip=True)
+
+        try:
+            # Обновляем данные книги в базе данных
+            cursor.execute("""
+                UPDATE Books
+                SET title = %s, author = %s, year = %s, publisher = %s, pages = %s, description = %s
+                WHERE id = %s
+            """, (title, author, year, publisher, pages, description, book_id))
+            cnx.commit()
+            flash("Данные книги успешно обновлены", "success")
+            return redirect(url_for('index'))
+        except db.connector.Error as err:
+            cnx.rollback()
+            flash(f"При обновлении данных возникла ошибка: {err}", "danger")
+        finally:
+            cursor.close()
+            cnx.close()
+
+    # Загружаем данные книги для отображения на странице редактирования
+    cursor.execute("SELECT * FROM Books WHERE id = %s", (book_id,))
+    book = cursor.fetchone()
+    return render_template('edit_book.html', book=book)
+
+@app.route('/delete/<int:book_id>', methods=['DELETE'])
+@login_required
+def delete_book(book_id):
+    cnx = db.connect()
+    cursor = cnx.cursor()
+
+    try:
+        #cursor.execute("DELETE FROM Reviews WHERE book_id = %s", (book_id,))
+        cursor.execute("DELETE FROM BookGenres WHERE book_id = %s", (book_id,))
+        cursor.execute("SELECT cover_id FROM Books WHERE id = %s", (book_id,))
+        cover_id = cursor.fetchone()[0]
+        cursor.execute("DELETE FROM Books WHERE id = %s", (book_id,))
+        cnx.commit()
+        if cover_id:
+            cover_path = os.path.join(app.config['UPLOAD_FOLDER'], str(cover_id))
+            if os.path.exists(cover_path):
+                os.remove(cover_path)
+
+        flash("Книга успешно удалена", "success")
+    except db.connector.Error as err:
+        cnx.rollback()
+        flash(f"При удалении книги возникла ошибка: {err}", "danger")
+    finally:
+        cursor.close()
+        cnx.close()
+
+    return jsonify({'message': 'Книга успешно удалена'}), 200
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+
