@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% from "form.html" import render_book_form %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Добавить книгу</h1>
+    {{ render_book_form() }}
+</div>
+{% endblock %}

@@ -1,26 +1,35 @@
-{% extends  'base.html' %}
-
-{% block content %}
-    <h1>Форма регистрации</h1>
-    <form method="POST">
-        <div class="mb-3 mt-3">
-        <label for="name-field">ФИО</label>
-        <input id="name-field" type="text" name="name-f" value="{{ request.form['name-f'] }}">
+{% macro render_book_form(book=None, edit=False) %}
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="title">Название</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ book.title if book else '' }}" required>
         </div>
-        <div class="mb-3">
-        <label for="email-field">email</label>
-        <input id="email-field" type="email" name="email-f" value="{{ request.form['email-f'] }}">
+        <div class="form-group">
+            <label for="author">Автор</label>
+            <input type="text" class="form-control" id="author" name="author" value="{{ book.author if book else '' }}" required>
         </div>
-        <button type="submit" class="btn btn-secondary">отправить</button>
+        <div class="form-group">
+            <label for="year">Год</label>
+            <input type="number" class="form-control" id="year" name="year" value="{{ book.year if book else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="publisher">Издатель</label>
+            <input type="text" class="form-control" id="publisher" name="publisher" value="{{ book.publisher if book else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="pages">Количество страниц</label>
+            <input type="number" class="form-control" id="pages" name="pages" value="{{ book.pages if book else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Описание</label>
+            <textarea class="form-control" id="description" name="description" rows="5" required>{{ book.description if book else '' }}</textarea>
+        </div>
+        {% if not edit %}
+        <div class="form-group">
+            <label for="cover">Обложка</label>
+            <input type="file" class="form-control" id="cover" name="cover" required>
+        </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Сохранить</button>
     </form>
-    <table class="table">
-        <tbody>
-            {% for key, value in request.form.items() %}
-                <tr>
-                    <td>{{ key }}</td>
-                    <td>{{ value }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% endblock %}
+{% endmacro %}
