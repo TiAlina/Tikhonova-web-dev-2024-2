@@ -233,13 +233,14 @@ def delete_book(book_id):
     return jsonify({'message': 'Книга успешно удалена'}), 200
 
 @app.route('/book/<int:book_id>')
+@login_required
 def view_book(book_id):
     cnx = db.connect()
     with cnx.cursor(named_tuple=True) as cursor:
-        # Получаем информацию о книге и средней оценке
+
         cursor.execute("""
             SELECT b.*, c.filename as cover_filename,
-                   AVG(r.rating) AS average_rating, COUNT(r.id) AS reviews_count
+                   FORMAT(AVG(r.rating), 1) AS average_rating, COUNT(r.id) AS reviews_count
             FROM Books b
             LEFT JOIN Covers c ON b.cover_id = c.id
             LEFT JOIN Reviews r ON b.id = r.book_id
@@ -248,7 +249,6 @@ def view_book(book_id):
         """, (book_id,))
         book = cursor.fetchone()
 
-        # Получаем рецензии книги
         cursor.execute("""
             SELECT r.rating, r.text, u.username as user_name
             FROM Reviews r
@@ -257,9 +257,39 @@ def view_book(book_id):
         """, (book_id,))
         reviews = cursor.fetchall()
 
-    return render_template('book.html', book=book, reviews=reviews)
+        cursor.execute("""
+            SELECT r.rating, r.text
+            FROM Reviews r
+            WHERE r.book_id = %s AND r.user_id = %s
+        """, (book_id, current_user.id))
+        user_review = cursor.fetchone()
+
+    return render_template('book.html', book=book, reviews=reviews, user_review=user_review)
+
+
+
+@app.route('/book/<int:book_id>/add_review', methods=['GET', 'POST'])
+def add_review(book_id):
+    user_id = current_user.id  # Использование текущего user_id
+    if request.method == 'POST':
+        rating = request.form['rating']
+        text = bleach.clean(request.form['text'])
+        cnx = db.connect()
+        with cnx.cursor(named_tuple=True) as cursor:
+            cursor.execute("""
+                INSERT INTO Reviews (book_id, user_id, rating, text)
+                VALUES (%s, %s, %s, %s)
+            """, (book_id, user_id, rating, text))
+            cnx.commit()
+        flash('Рецензия успешно добавлена!', 'success')
+        return redirect(url_for('view_book', book_id=book_id))
+
+    return render_template('add_review.html', book_id=book_id)
+
+
 
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
