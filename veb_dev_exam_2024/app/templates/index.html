@@ -20,7 +20,10 @@
                 <td>{{ book.average_rating or 'Нет оценок' }}</td>
                 <td>{{ book.reviews_count }}</td>
                 <td>
-                    <a href="{{ url_for('edit_book', book_id=book.id) }}" class="btn btn-primary">Редактировать</a>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <a href="{{ url_for('edit_book', book_id=book.id) }}" class="btn btn-primary">Редактировать</a>
+                        <button onclick="openDeleteModal('{{ book.title }}', {{ book.id }})" class="btn btn-danger">Удалить</button>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -56,23 +59,25 @@
     </nav>
 </div>
 
-<script>
-    function loadPage(page) {
-        fetch(`/page/${page}`)
-            .then(response => response.text())
-            .then(data => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(data, 'text/html');
 
-                // Update books table body
-                const newTableBody = doc.querySelector('#books-table-body').innerHTML;
-                document.querySelector('#books-table-body').innerHTML = newTableBody;
+<div class="modal fade" id="deleteBookModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Удаление книги</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteBookMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                <button id="confirmDeleteButton" type="button" class="btn btn-danger">Да</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                // Update pagination
-                const newPagination = doc.querySelector('#pagination').innerHTML;
-                document.querySelector('#pagination').innerHTML = newPagination;
-            })
-            .catch(error => console.error('Error loading page:', error));
-    }
-</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 {% endblock %}
+
