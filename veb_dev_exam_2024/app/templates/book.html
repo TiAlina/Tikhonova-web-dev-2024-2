@@ -16,23 +16,37 @@
                     <p><strong>Издательство:</strong> {{ book.publisher }}</p>
                     <p><strong>Количество страниц:</strong> {{ book.pages }}</p>
                     <p><strong>Описание:</strong> {{ book.description }}</p>
-                    <p><strong>Средняя оценка:</strong> <span class="badge bg-success">{{ "%.1f"|format(book.average_rating) if book.average_rating else 'Нет оценок' }}</span></p>
+                    <p><strong>Средняя оценка:</strong> {{ book.average_rating or 'Нет оценок' }}</p>
                     <p><strong>Количество рецензий:</strong> {{ book.reviews_count }}</p>
                 </div>
             </div>
+
+            {% if user_review %}
+            <div class="mt-4 p-3" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
+                <h3>Ваша рецензия:</h3>
+                <strong>Оценка:</strong> {{ user_review.rating }}/5<br>
+                <strong>Текст:</strong> {{ user_review.text }}
+            </div>
+            {% else %}
+            <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-primary mt-4">Написать рецензию</a>
+            {% endif %}
         </div>
     </div>
 
     <div class="row mt-4">
         <div class="col-md-8">
-            <h2>Рецензии:</h2>
+            <h2>Рецензии других пользователей:</h2>
             {% if reviews %}
             <ul class="list-group">
                 {% for review in reviews %}
-                <li class="list-group-item">
-                    <strong>Пользователь:</strong> {{ review.user_name }}<br>
-                    <strong>Оценка:</strong> {{ review.rating }}/5<br>
-                    <strong>Текст:</strong> {{ review.text }}
+                <li class="list-group-item mb-3" style="border: 1px solid #dee2e6; border-radius: 5px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Пользователь:</strong> {{ review.user_name }}
+                        </div>
+                        <span class="badge badge-primary">{{ review.rating }}/5</span>
+                    </div>
+                    <p class="mt-2">{{ review.text }}</p>
                 </li>
                 {% endfor %}
             </ul>
