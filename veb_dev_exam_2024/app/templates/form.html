@@ -1,4 +1,4 @@
-{% macro render_book_form(book=None, edit=False) %}
+{% macro render_book_form(book=None, genres=None, selected_genres=None, edit=False) %}
     <form method="post" enctype="multipart/form-data">
         <div class="form-group">
             <label for="title">Название</label>
@@ -19,6 +19,15 @@
         <div class="form-group">
             <label for="pages">Количество страниц</label>
             <input type="number" class="form-control" id="pages" name="pages" value="{{ book.pages if book else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label>Жанры</label>
+            <div class="form-check">
+                {% for genre in genres %}
+                    <input class="form-check-input" type="checkbox" id="genre{{ genre.id }}" name="genres" value="{{ genre.id }}" {% if selected_genres and genre.id in selected_genres %}checked{% endif %}>
+                    <label class="form-check-label" for="genre{{ genre.id }}">{{ genre.name }}</label><br>
+                {% endfor %}
+            </div>
         </div>
         <div class="form-group">
             <label for="description">Описание</label>
