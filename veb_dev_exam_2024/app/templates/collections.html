@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Мои подборки</h1>
+
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Название подборки</th>
+                <th>Количество книг</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="collections-table-body">
+            {% for collection in collections %}
+            <tr>
+                <td>{{ collection.name }}</td>
+                <td>{{ collection.books_count }}</td>
+                <td>
+                    <a href="{{ url_for('view_collection', collection_id=collection.id) }}" class="btn btn-primary">Просмотр</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Кнопка "Добавить подборку" -->
+    <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCollectionModal">
+        Добавить подборку
+    </button>
+</div>
+
+<!-- Модальное окно для добавления новой подборки -->
+<div class="modal fade" id="addCollectionModal" tabindex="-1" aria-labelledby="addCollectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCollectionModalLabel">Новая подборка</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCollectionForm" method="post" action="{{ url_for('add_collection') }}">
+                    <div class="mb-3">
+                        <label for="collectionName" class="form-label">Название подборки</label>
+                        <input type="text" class="form-control" id="collectionName" name="name" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% endblock %}
