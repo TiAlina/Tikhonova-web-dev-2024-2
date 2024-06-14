@@ -15,44 +15,78 @@
                     <p><strong>Год издания:</strong> {{ book.year }}</p>
                     <p><strong>Издательство:</strong> {{ book.publisher }}</p>
                     <p><strong>Количество страниц:</strong> {{ book.pages }}</p>
-                    <p><strong>Описание:</strong> {{ book.description }}</p>
+                    <p><strong>Жанры:</strong> {% if book.genres %}{{ book.genres }}{% else %}Нет жанров{% endif %}</p>
+                    <div><strong>Описание:</strong> {{ book.description|safe }}</div>
                     <p><strong>Средняя оценка:</strong> {{ book.average_rating or 'Нет оценок' }}</p>
                     <p><strong>Количество рецензий:</strong> {{ book.reviews_count }}</p>
                 </div>
-            </div>
 
-            {% if user_review %}
-            <div class="mt-4 p-3" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
-                <h3>Ваша рецензия:</h3>
-                <strong>Оценка:</strong> {{ user_review.rating }}/5<br>
-                <strong>Текст:</strong> {{ user_review.text }}
+                {% if current_user.is_authenticated and user_review is none %}
+                <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-primary mt-4">Написать рецензию</a>
+                {% endif %}
+                {% if user_review %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        Моя рецензия
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><strong>Рейтинг:</strong> {{ user_review.rating }}/5</p>
+                        <p class="card-text"><strong>Текст рецензии:</strong> {{ user_review.text }}</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% else %}
-            <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-primary mt-4">Написать рецензию</a>
-            {% endif %}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <h2>Рецензии других пользователей:</h2>
+                {% if reviews %}
+                <ul class="list-group">
+                    {% for review in reviews %}
+                    <li class="list-group-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Пользователь:</strong> {{ review.user_name }}
+                            </div>
+                            <span class="badge badge-primary">{{ review.rating }}/5</span>
+                        </div>
+                        <p class="mt-2">{{ review.text }}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>Нет рецензий для этой книги.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="row mt-4">
-        <div class="col-md-8">
-            <h2>Рецензии других пользователей:</h2>
-            {% if reviews %}
-            <ul class="list-group">
-                {% for review in reviews %}
-                <li class="list-group-item mb-3" style="border: 1px solid #dee2e6; border-radius: 5px;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>Пользователь:</strong> {{ review.user_name }}
-                        </div>
-                        <span class="badge badge-primary">{{ review.rating }}/5</span>
+<!-- Модальное окно для добавления в подборку -->
+<div class="modal fade" id="addToCollectionModal" tabindex="-1" aria-labelledby="addToCollectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToCollectionModalLabel">Добавить в подборку</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addToCollectionForm" method="post" action="{{ url_for('add_to_collection', book_id=book.id) }}">
+                    <div class="mb-3">
+                        <label for="collectionSelect" class="form-label">Выберите подборку</label>
+                        <select class="form-select" id="collectionSelect" name="collection_id" required>
+                            {% for collection in collections %}
+                            <option value="{{ collection.id }}">{{ collection.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <p class="mt-2">{{ review.text }}</p>
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p>Нет рецензий для этой книги.</p>
-            {% endif %}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
