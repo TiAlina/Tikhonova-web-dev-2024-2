@@ -180,12 +180,12 @@ def add_book():
     genres = cursor.fetchall()
 
     if request.method == 'POST':
-        title = request.form['title']
-        author = request.form['author']
-        year = request.form['year']
+        title = bleach.clean(request.form['title'])
+        author = bleach.clean(request.form['author'])
+        year = bleach.clean(request.form['year'])
         publisher = request.form['publisher']
-        pages = request.form['pages']
-        description = request.form['description']
+        pages = bleach.clean(request.form['pages'])
+        description = bleach.clean(request.form['description'])
         cover = request.files['cover']
         genre_ids = request.form.getlist('genres')
 
@@ -241,13 +241,13 @@ def edit_book(book_id):
     cursor = cnx.cursor(dictionary=True)
 
     if request.method == 'POST':
-        title = request.form['title']
-        author = request.form['author']
-        year = request.form['year']
-        publisher = request.form['publisher']
-        pages = request.form['pages']
+        title = bleach.clean(request.form['title'])
+        author = bleach.clean(request.form['author'])
+        year = bleach.clean(request.form['year'])
+        publisher = bleach.clean(request.form['publisher'])
+        pages = bleach.clean(request.form['pages'])
         description = bleach.clean(request.form['description'], strip=True)
-        genre_ids = request.form.getlist('genres')  # Получаем список выбранных жанров
+        genre_ids = request.form.getlist('genres')
 
         try:
             cursor.execute("""
@@ -257,9 +257,8 @@ def edit_book(book_id):
             """, (title, author, year, publisher, pages, description, book_id))
             cnx.commit()
 
-            # Удаляем старые записи о жанрах книги
             cursor.execute("DELETE FROM BookGenres WHERE book_id = %s", (book_id,))
-            # Вставляем новые записи о жанрах книги
+
             for genre_id in genre_ids:
                 cursor.execute("INSERT INTO BookGenres (book_id, genre_id) VALUES (%s, %s)", (book_id, genre_id))
             cnx.commit()
@@ -276,11 +275,10 @@ def edit_book(book_id):
     cursor.execute("SELECT * FROM Books WHERE id = %s", (book_id,))
     book = cursor.fetchone()
 
-    # Получаем список жанров для всех книг
     cursor.execute("SELECT id, name FROM Genres")
     genres = cursor.fetchall()
 
-    # Получаем список жанров, выбранных для данной книги
+
     cursor.execute("SELECT genre_id FROM BookGenres WHERE book_id = %s", (book_id,))
     selected_genres = [genre['genre_id'] for genre in cursor.fetchall()]
 
@@ -298,20 +296,18 @@ def delete_book(book_id):
     cursor = cnx.cursor()
 
     try:
-        # Получение cover_id книги
         cursor.execute("SELECT cover_id FROM Books WHERE id = %s", (book_id,))
         row = cursor.fetchone()
         if row:
             cover_id = row[0]
 
-            # Удаление информации о жанрах книги
+
             cursor.execute("DELETE FROM BookGenres WHERE book_id = %s", (book_id,))
 
-            # Удаление книги
             cursor.execute("DELETE FROM Books WHERE id = %s", (book_id,))
             cnx.commit()
 
-            # Удаление файла обложки, если он существует
+
             if cover_id:
                 cover_path = os.path.join(app.config['UPLOAD_FOLDER'], str(cover_id))
                 if os.path.exists(cover_path):
@@ -378,7 +374,7 @@ def view_book(book_id):
     return render_template('book.html', book=book, reviews=reviews, user_review=user_review, collections=collections, get_user_role=get_user_role)
 
 
-# Функция для добавления книги в подборку
+
 @app.route('/book/<int:book_id>/add_to_collection', methods=['POST'])
 @login_required
 def add_to_collection(book_id):
@@ -401,7 +397,6 @@ def add_review(book_id):
     user_id = current_user.id
     if request.method == 'POST':
         rating_text = request.form['rating']
-        # Преобразование текстового значения оценки в числовое значение
         ratings = {
             'отлично': 5,
             'хорошо': 4,
@@ -447,7 +442,7 @@ def collections():
 
         return render_template('collections.html', collections=collections)
 
-# Функция для добавления новой подборки
+
 @app.route('/collections/add', methods=['POST'])
 @login_required
 def add_collection():
@@ -465,7 +460,7 @@ def add_collection():
         flash('Подборка успешно добавлена!', 'success')
         return redirect(url_for('collections'))
 
-# Функция для просмотра книг в подборке
+
 @app.route('/collections/<int:collection_id>')
 @login_required
 def view_collection(collection_id):
