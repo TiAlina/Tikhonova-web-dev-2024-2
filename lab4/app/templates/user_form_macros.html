@@ -1,0 +1,77 @@
+{% macro user_form(user, errors, roles) %}
+<form action="#" method="post">
+    {% if not user %}
+    <label for="login" class="form-label">Логин</label>
+    <input
+        type="text"
+        placeholder="Введите логин"
+        id="login"
+        class="form-control {% if errors.login %}is-invalid{% endif %}"
+        name="login"
+        value="{{ request.form.login }}" />
+    {% if errors.login %}
+    <div class="invalid-feedback">{{ errors.login }}</div>
+    {% endif %} {% endif %} {% if not user %}
+    <label for="password" class="form-label">Пароль</label>
+    <input
+        type="password"
+        placeholder="Введите пароль"
+        id="password"
+        class="form-control {% if errors.password %}is-invalid{% endif %}"
+        name="password" />
+    {% if errors.password %}
+    <div class="invalid-feedback">{{ errors.password }}</div>
+    {% endif %} {% endif %}
+    <label for="last_name" class="form-label">Фамилия</label>
+    <input
+        type="text"
+        placeholder="Введите фамилию"
+        id="last_name"
+        class="form-control {% if errors.last_name %}is-invalid{% endif %}"
+        name="last_name"
+        value="{% if request.form %}{{request.form.last_name}}{% elif user.last_name %}{{ user.last_name }}{% endif %}" />
+    {% if errors.last_name %}
+    <div class="invalid-feedback">{{ errors.last_name }}</div>
+    {% endif %}
+    <label for="first_name" class="form-label">Имя</label>
+    <input
+        type="text"
+        placeholder="Введите имя"
+        id="first_name"
+        class="form-control {% if errors.first_name %}is-invalid{% endif %}"
+        name="first_name"
+        value="{% if request.form %}{{request.form.first_name}}{% elif user.first_name %}{{ user.first_name }}{% endif %}" />
+    {% if errors.first_name %}
+    <div class="invalid-feedback">{{ errors.first_name }}</div>
+    {% endif %}
+    <label for="middle_name" class="form-label">Отчество</label>
+    <input
+        type="text"
+        placeholder="Введите отчество"
+        id="middle_name"
+        class="form-control"
+        name="middle_name"
+        value="{% if request.form %}{{request.form.middle_name}}{% elif user.middle_name %}{{ user.middle_name }}{% endif %}" />
+    <label for="middle_name" class="form-label">Роль</label>
+    <select
+        placeholder="Выберите роль"
+        id="role"
+        class="form-select mb-2"
+        name="role_id">
+        {% if (request.form.role_id or "")=="" and (user and user.role_id or
+        "")=="" %}
+        <option value="" selected>Выберите роль</option>
+        {% else %}
+        <option value="">Выберите роль</option>
+        {% endif %} {% for role in roles %} {% if (request.form.role_id or
+        "")==role.id|string or not request.form and user and
+        user.role_id==role.id %}
+        <option value="{{ role.id }}" selected>{{ role.name }}</option>
+        {% else %}
+        <option value="{{ role.id }}">{{ role.name }}</option>
+        {% endif %} {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+</form>
+{% endmacro %}
